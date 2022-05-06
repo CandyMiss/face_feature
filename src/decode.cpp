@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <fstream>
 #include <stdlib.h>
+#include "face_feature/FacePicMsg.h"
 
 using namespace std;
 //设置gstreamer管道参数tx2s
@@ -18,6 +19,9 @@ int num = 0;    //给照片编号排序
 string image_name;
 string video_name;
 string pic_name;
+
+ros::Publisher FacePicPub;
+face_feature::FacePicMsg face_pic_msg;
 
 std::string gstreamer_pipeline (int capture_width, int capture_height, int display_width, int display_height, int framerate, int flip_method)
 {
@@ -94,13 +98,16 @@ int main(int argc, char **argv)
     string line;                            //每次读取一行
     cv::Mat img;                        //存储读到的本地照片
 
-    //2 创建ROS中图像的发布者
-    image_transport::ImageTransport it(n);
-    image_transport::Publisher pub_image = it.advertise("/camera_csi0/frames", 1);
+    // //2 创建ROS中图像的发布者
+    // image_transport::ImageTransport it(n);
+    // image_transport::Publisher pub_image = it.advertise("/camera_csi0/frames", 1);
 
-    //cv_bridge功能包提供了ROS图像和OpenCV图像转换的接口，建立了一座桥梁
-    cv_bridge::CvImagePtr frame = boost::make_shared<cv_bridge::CvImage>();
-    frame->encoding = sensor_msgs::image_encodings::BGR8;
+    // //cv_bridge功能包提供了ROS图像和OpenCV图像转换的接口，建立了一座桥梁
+    // cv_bridge::CvImagePtr frame = boost::make_shared<cv_bridge::CvImage>();
+    // frame->encoding = sensor_msgs::image_encodings::BGR8;
+
+    //2.2创建发布者，自定义消息类型
+    FacePicPub = n.advertise<face_feature::FacePicMsg>("/frames", 1);
 
 
     while(ros::ok())
@@ -132,12 +139,19 @@ int main(int argc, char **argv)
             pic_name = pic_name + ".jpg";
             img = cv::imread(pic_path + pic_name, 1); 
             imshow("img: ",img);
+            face_pic_msg.FaceImage =*(cv_bridge::CvImage(std_msgs::Header(), "bgr8", img ).toImageMsg());  //用cv_bridge转化mat
+            face_pic_msg.id = num;
             cout << "num:   " << num << endl;
+            //发布消息
+            FacePicPub.publish(face_pic_msg);
         }
         else
         {
             infile.close();
             cout << "read face_pic_name.txt finish." << endl;
+            face_pic_msg.id = -1;       //表示传输结束
+            //发布消息
+            FacePicPub.publish(face_pic_msg);
             break;
         }
 

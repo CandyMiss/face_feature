@@ -122,6 +122,7 @@ add_message_files(
   ResultMsg.msg
   FaceRecMsg.msg
   DriverIdMsg.msg
+  FacePicMsg.msg
  )
 generate_messages(
   DEPENDENCIES
@@ -188,7 +189,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/driver_face_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/face_feature_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -334,7 +335,7 @@ add_definitions(-O2 -pthread)
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_driver_face.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_face_feature.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

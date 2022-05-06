@@ -2,8 +2,8 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
-#include <driver_face/ResultMsg.h>
-#include <driver_face/FaceRecMsg.h>
+#include <face_feature/ResultMsg.h>
+#include <face_feature/FaceRecMsg.h>
 
 #include "yolov5/yolov5.h"
 #include "data/results.h"
@@ -30,8 +30,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
         cout << "接收的图像是 " << (int)((nowStamp - stamp).toSec() * 1000) << " 毫秒之前拍摄的" << endl;
 
         cv::Mat frame = cv_bridge::toCvShare(msg, "bgr8")->image;       //摄像头接收到的 图像
-        driver_face::ResultMsg result_msg;
-        driver_face::FaceRecMsg face_msg;
+        face_feature::ResultMsg result_msg;
+        face_feature::FaceRecMsg face_msg;
 		result_msg.LatestResultStamp = CurAnalyzeStamp;
         CurAnalyzeStamp = stamp;
 		result_msg.CurAnalyzeStamp  = stamp;
@@ -118,8 +118,8 @@ int main(int argc, char **argv)
     cout << "YoloV5 引擎序列化完成" << endl;
 
     CurAnalyzeStamp = ros::Time::now();
-    StampInfoPub = node_analyze.advertise<driver_face::ResultMsg>("/camera_csi0/cur_result", 1);
-    FaceInfoPub = node_analyze.advertise<driver_face::FaceRecMsg>("/camera_csi0/face_result", 1);
+    StampInfoPub = node_analyze.advertise<face_feature::ResultMsg>("/camera_csi0/cur_result", 1);
+    FaceInfoPub = node_analyze.advertise<face_feature::FaceRecMsg>("/camera_csi0/face_result", 1);
 
     image_transport::ImageTransport it(node_analyze);
     image_transport::Subscriber sub = it.subscribe("/camera_csi0/frames", 1, imageCallback);

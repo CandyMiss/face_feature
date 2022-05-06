@@ -3,15 +3,21 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/opencv.hpp>
+#include <fstream>
+#include <stdlib.h>
 
 using namespace std;
 //设置gstreamer管道参数tx2s
 
 string video_path = "/home/nvidia/Videos/";
 string cam0_path = "/home/nvidia/wdq/picture/cam0/";   //存储摄像头拍摄的照片
+string pic_path = "/home/nvidia/Pictures/face_pic/";    //读取待录入图片的路径
+string txt_path = "/home/nvidia/wdq/ros_vision/src/face_feature/src/data/";     //存.txt文件的路径
+
 int num = 0;    //给照片编号排序
 string image_name;
 string video_name;
+string pic_name;
 
 std::string gstreamer_pipeline (int capture_width, int capture_height, int display_width, int display_height, int framerate, int flip_method)
 {
@@ -62,17 +68,31 @@ int main(int argc, char **argv)
     //     ros::shutdown();
     // }
 
-    //1.2读取本地视频，用于获取录入素材
-    video_name = "IMG_4500.MOV";
-    cv::VideoCapture cap(video_path + video_name);
-    if(!cap.isOpened()){
-		std::cout<<"open video failed!"<<std::endl;
-		return -1;
-	}
-	else
-	std::cout<<"open video success!"<<std::endl;
-    bool isSuccess = true;
-    cv::Mat img;      //存储读取的本地视频的每一帧
+    // //1.2读取本地视频，用于获取录入素材
+    // video_name = "IMG_4500.MOV";
+    // cv::VideoCapture cap(video_path + video_name);
+    // if(!cap.isOpened()){
+	// 	std::cout<<"open video failed!"<<std::endl;
+	// 	return -1;
+	// }
+	// else
+	// std::cout<<"open video success!"<<std::endl;
+    // bool isSuccess = true;
+    // cv::Mat img;      //存储读取的本地视频的每一帧
+
+    //1.3读取待录入的照片
+    const std::string face_pic_name = "face_pic_name.txt";
+    const std::string suffix = ".jpg";
+    unsigned int suffix_len = suffix.length();
+    ifstream infile;
+    infile.open(txt_path + face_pic_name);   //将文件流对象与文件连接起来
+    if(infile.is_open())
+    {
+            cout << "face_pic_name.txt opened successfully." << endl;
+    }
+    //assert(infile.is_open());   //若失败,则输出错误消息,并终止程序
+    string line;                            //每次读取一行
+    cv::Mat img;                        //存储读到的本地照片
 
     //2 创建ROS中图像的发布者
     image_transport::ImageTransport it(n);
@@ -82,9 +102,10 @@ int main(int argc, char **argv)
     cv_bridge::CvImagePtr frame = boost::make_shared<cv_bridge::CvImage>();
     frame->encoding = sensor_msgs::image_encodings::BGR8;
 
+
     while(ros::ok())
     {
-        // //摄像头
+        // /1.1/摄像头
         // capture >> frame->image; //流的转换
 
         // if(frame->image.empty())
@@ -96,38 +117,56 @@ int main(int argc, char **argv)
         // frame->header.stamp = ros::Time::now();
         // cv::Mat img = frame->image;
 
-        //读取本地视频
-        isSuccess = cap.read(img);
-		if(!isSuccess){//if the video ends, then break
-			std::cout<<"video ends"<<std::endl;
-			break;
-		}
-        //打成ROS数据包
-        frame->header.stamp = ros::Time::now();
-        frame->image = img;
+        // //1.2读取本地视频
+        // isSuccess = cap.read(img);
+		// if(!isSuccess){//if the video ends, then break
+		// 	std::cout<<"video ends"<<std::endl;
+		// 	break;
+		// }
+
+        //1.3读取本地照片
+        if(getline(infile, line))
+        {
+            pic_name = line.substr(0, line.length() - suffix_len);
+            num = atoi(pic_name.c_str());
+            pic_name = pic_name + ".jpg";
+            img = cv::imread(pic_path + pic_name, 1); 
+            imshow("img: ",img);
+            cout << "num:   " << num << endl;
+        }
+        else
+        {
+            infile.close();
+            cout << "read face_pic_name.txt finish." << endl;
+            break;
+        }
+
+        // //打成ROS数据包
+        // frame->header.stamp = ros::Time::now();
+        // frame->image = img;
 
 
         
-        //倒置画面，可以，但是球机上画面上的日期信息也会倒置，不方面查看
-        cv::Mat pubimg;     //存储倒置的画面
-        flip(img,pubimg,-1);
-        frame->image = pubimg;//需要倒置
-        //test
-        //imshow("pubimg:",pubimg);
+        // //倒置画面，可以，但是球机上画面上的日期信息也会倒置，不方面查看
+        // cv::Mat pubimg;     //存储倒置的画面
+        // flip(img,pubimg,-1);
+        // frame->image = pubimg;//需要倒置
+        // //test
+        // //imshow("pubimg:",pubimg);
 
 
-        //存储照片，照片名：序号.jpg
-        image_name = std::to_string(num)+".jpg";
-        cv::imwrite(cam0_path + image_name, img);   //保存图片
-        num++;
+        // //存储照片，照片名：序号.jpg
+        // image_name = std::to_string(num)+".jpg";
+        // cv::imwrite(cam0_path + image_name, img);   //保存图片
+        // num++;
         
-        pub_image.publish(frame->toImageMsg());
+        // pub_image.publish(frame->toImageMsg());
 
-        cv::waitKey(3);//opencv刷新图像 3ms
+        cv::waitKey(1000);//opencv刷新图像 3ms
         ros::spinOnce();
     }
 
     //capture.release();    //释放流
-    cap.release();
+    // cap.release();
     return EXIT_SUCCESS;
 }

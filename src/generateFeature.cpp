@@ -6,9 +6,12 @@
 #include <face_feature/DriverIdMsg.h>
 #include "font/CvxText.h"
 #include <iostream>
+#include <stdlib.h>
+#include <fstream>
 
 #include <queue>
 #include <map>
+#include <string.h>
 
 #include "./pfld/pfld.h"
 #include "./arcface/arcface.h"
@@ -19,25 +22,23 @@
 using std::cout;
 using std::endl;
 using std::map;
+using std::string;
+using std::ifstream;
 
-
-
-// DriverIDResult *CurDriverIDResult;
-// Results *AllResult;
-// DriverResult driverResult;
-// face_feature::DriverIdMsg driver_msg;
-// FaceIdMatchMaker matchMaker;
+string txt_path = "/home/nvidia/wdq/ros_vision/src/face_feature/src/data/";     //存.txt文件的路径
+string cap_path = "/home/nvidia/Pictures/face_cap/";    //待识别特征的人脸图片的路径
+string cap_pic_name;
+string face_data_filename = "/home/nvidia/Documents/face_data/face.data";
 
 ros::Publisher DriverInfoPub;
 
-// static float prob[PFLD::OUTPUT_SIZE];
-// static unsigned int DoFaceIDTimes = 0;
 static int faceId = 0;         //tmp人脸id
+int num = 0;                        //照片编号
 
 // 当前结果寄存处
 float tmpFaceFeature[ArcFace::FACE_FEATURE_DIMENSION]{0.0};//512维特征向量
 
-float gallaryData[(ArcFace::GALLARY_NUM )* (ArcFace::FACE_FEATURE_DIMENSION)];    //存特征库
+float gallaryData[(ArcFace::GALLARY_NUM )* (ArcFace::FACE_FEATURE_DIMENSION)]{0.0};    //存特征库
 
 inline void printVector(float *tmpFaceFeature){ //用于辅助测试特征是否被捕捉
     for(int i=0; i<ArcFace::FACE_FEATURE_DIMENSION; ++i){
@@ -132,15 +133,51 @@ int main(int argc, char **argv)
     // ArcFace::ReadFaceDataToGPU();
     // cout << "初始化人脸数据完成" <<  std::endl;   
 
+    // //1.1消息机制，更新人脸图片
+    // cv::namedWindow("view2",cv::WINDOW_NORMAL); 
+    // ros::Subscriber sub = node_generate.subscribe("/face_picture", 1, imageCallback);    
+    // ros::spin();   
+    // cv::destroyWindow("view2");    //窗口
 
-    cv::namedWindow("view2",cv::WINDOW_NORMAL); 
-    ros::Subscriber sub = node_generate.subscribe("/face_picture", 1, imageCallback);    
+    //1.2直接读取本地的人脸照片
+    const std::string txt = "face_cap_name.txt";
+    const std::string suffix = ".jpg";
+    unsigned int suffix_len = suffix.length();
+    ifstream infile;
+    infile.open(txt_path + txt);   //将文件流对象与文件连接起来
+    if(infile.is_open())
+    {
+            cout << "face_pic_name.txt opened successfully." << endl;
+    }
+    //assert(infile.is_open());   //若失败,则输出错误消息,并终止程序
+    string line;                            //每次读取一行
+    cv::Mat img;                        //存储读到的本地照片
+    while(getline(infile, line))
+    {
+        cap_pic_name = line.substr(0, line.length() - suffix_len);
+        num = atoi(cap_pic_name.c_str());
+        cap_pic_name = cap_pic_name + ".jpg";
+        img = cv::imread(cap_path + cap_pic_name, 1); 
+        memset(tmpFaceFeature, 0, sizeof(tmpFaceFeature));
+        //printVector(tmpFaceFeature);
+        ArcFace::GetFaceFeature(img, tmpFaceFeature);
+        memcpy((gallaryData+num*(ArcFace::FACE_FEATURE_DIMENSION)), tmpFaceFeature, (ArcFace::FACE_FEATURE_DIMENSION) * sizeof(float));
+        // //test 
+        // printVector(gallaryData+num*(ArcFace::FACE_FEATURE_DIMENSION));
+        cout << "read " << cap_pic_name << " successfully." << endl;
+    }
 
-    ros::spin();   
+    //写到本地
+    std::ofstream outFStream(face_data_filename.c_str(), std::ios::binary);
+    if(!outFStream){
+        std::cout << "Failed to open face data file." << std::endl;
+    }
+    else{
+        std::cout<< "Face data file opened successfully." << std::endl;
+    }
+    outFStream.write((char *) &gallaryData, sizeof(gallaryData));
+    outFStream.close();
 
-    cv::destroyWindow("view2");    //窗口
-    //YoloV5::ReleaseYoloV5Engine();
-    // PFLD::ReleasePFLDEngine();
     ArcFace::ReleasePFLDEngine();       //一样的名字
     return 0;
 

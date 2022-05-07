@@ -138,7 +138,7 @@ int main(int argc, char **argv)
             num = atoi(pic_name.c_str());
             pic_name = pic_name + ".jpg";
             img = cv::imread(pic_path + pic_name, 1); 
-            imshow("img: ",img);
+            // imshow("img: ",img);
             face_pic_msg.FaceImage =*(cv_bridge::CvImage(std_msgs::Header(), "bgr8", img ).toImageMsg());  //用cv_bridge转化mat
             face_pic_msg.id = num;
             cout << "num:   " << num << endl;

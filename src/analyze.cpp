@@ -28,6 +28,15 @@ void imageCallback(const face_feature::FacePicMsg::ConstPtr& msg)
     //sensor_msgs::Image ROS中image传递的消息形式
     try
     {
+        if(msg->id == -1)
+        {
+            cout << "-1,finish" << endl;           
+            return;           
+        }
+        else if(msg->id == 1)
+        {
+            cout << "1" << endl;
+        }
 
         boost::shared_ptr<void const> tracked_object;    //共享指针,原来初始化了：boost::shared_ptr<void const> tracked_object(&(msg->FaceImage))
         cv::Mat frame = cv_bridge::toCvShare(msg->FaceImage, tracked_object,"bgr8")->image;
@@ -94,13 +103,11 @@ int main(int argc, char **argv)
     YoloV5::InitYoloV5Engine();
     cout << "YoloV5 引擎序列化完成" << endl;
 
-    CurAnalyzeStamp = ros::Time::now();
+    // CurAnalyzeStamp = ros::Time::now();
      //订阅
     ros::Subscriber sub = node_analyze.subscribe("/frames", 1, imageCallback);
     //发布
     FaceInfoPub = node_analyze.advertise<face_feature::FacePicMsg>("/face_picture", 1);
-
-
 
     ros::spin();
 

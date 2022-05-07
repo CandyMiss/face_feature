@@ -33,10 +33,6 @@ void imageCallback(const face_feature::FacePicMsg::ConstPtr& msg)
             cout << "-1,finish" << endl;           
             return;           
         }
-        else if(msg->id == 1)
-        {
-            cout << "1" << endl;
-        }
 
         boost::shared_ptr<void const> tracked_object;    //共享指针,原来初始化了：boost::shared_ptr<void const> tracked_object(&(msg->FaceImage))
         cv::Mat frame = cv_bridge::toCvShare(msg->FaceImage, tracked_object,"bgr8")->image;

@@ -1,1 +1,4 @@
 # face_feature
+当前版本是用运行generate一个节点生成face.data
+输入的图片是只截取了人脸的部分。
+读取图片依赖一个txt文件存储图片名。

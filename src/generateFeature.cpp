@@ -12,6 +12,7 @@
 #include <queue>
 #include <map>
 #include <string.h>
+#include <vector>
 
 #include "./pfld/pfld.h"
 #include "./arcface/arcface.h"
@@ -25,7 +26,8 @@ using std::map;
 using std::string;
 using std::ifstream;
 
-string txt_path = "/home/nvidia/wdq/ros_vision/src/face_feature/src/data/";     //存.txt文件的路径
+// string _path = "/home/nvidia/wdq/ros_vision/src/face_feature/src/data/";     //存.txt文件的路径
+string txt_path;
 string cap_path = "/home/nvidia/Pictures/face_cap/";    //待识别特征的人脸图片的路径
 string cap_pic_name;
 string face_data_filename = "/home/nvidia/Documents/face_data/face.data";
@@ -140,6 +142,11 @@ int main(int argc, char **argv)
     // cv::destroyWindow("view2");    //窗口
 
     //1.2直接读取本地的人脸照片
+    txt_path = argv[1]; //第二个参数开始
+    cout  << "argv[1]:  " << argv[1] << endl;
+
+    // std::vector<cv::String> picture_names;
+    // cv::glob(picture_path, picture_names);
     const std::string txt = "face_cap_name.txt";
     const std::string suffix = ".jpg";
     unsigned int suffix_len = suffix.length();

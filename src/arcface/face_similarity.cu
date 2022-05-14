@@ -43,7 +43,7 @@ extern "C" void InitFaceGallaryToDevice(float *h_gallary_buffer)
 extern "C" int GetSimilarityIndex(float *d_face_buffers)    // 直接处理cuda端数据，其内存由调用者申请和释放
 {
     float *h_similar_result = (float *) malloc(FACE_NUM * sizeof(float));   // 保存输出结果的2000个相似度，但并不需要返回，所以最后要释放
-
+    memset(h_similar_result, 0, sizeof(FACE_NUM * sizeof(float)));
     //初始化cuda端数组
     float *d_similar_result = NULL;
     cudaMalloc((void **) &d_similar_result, FACE_NUM * sizeof(float)); // CUDA 端 2000 个相似度输出

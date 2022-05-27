@@ -1,0 +1,2 @@
+# Hashes of file build rules.
+adc34d8c653a19ef58944c34abd6331b CMakeFiles/face_similarity.dir/src/arcface/face_similarity_generated_face_similarity.cu.o

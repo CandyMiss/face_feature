@@ -1,9 +1,9 @@
-#include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
+// #include <ros/ros.h>
+// #include <image_transport/image_transport.h>
+// #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
-#include <face_feature/FacePicMsg.h>
-#include <face_feature/DriverIdMsg.h>
+// #include <face_feature/FacePicMsg.h>
+// #include <face_feature/DriverIdMsg.h>
 #include "font/CvxText.h"
 #include <iostream>
 #include <stdlib.h>
@@ -15,11 +15,14 @@
 #include <string>
 #include <vector>
 
-#include "./pfld/pfld.h"
+// #include "./pfld/pfld.h"
 #include "./arcface/arcface.h"
-#include "data/results.h"
-#include "database/SqliteOp.h"
-#include "utils/faceId_match.h"
+// #include "data/results.h"
+// #include "database/SqliteOp.h"
+// #include "utils/faceId_match.h"
+#ifndef DEVICE
+    #define DEVICE 0
+#endif
 
 using std::cout;
 using std::endl;
@@ -35,7 +38,7 @@ const std::string separator = "_";
 std::string face_data_path = "/home/nvidia/Documents/face_data/";
 std::string map_path = "/home/nvidia/Documents/face_map/";
 
-ros::Publisher DriverInfoPub;
+// ros::Publisher DriverInfoPub;
 
 static int faceId = 0;         //tmp人脸id
 int num = 0;                        //照片编号
@@ -81,81 +84,81 @@ inline void getIDName(const std::string &a, const std::string &separator, int &i
     }
 }
 
-void imageCallback(const face_feature::FacePicMsg::ConstPtr& msg)
-{
-    //sensor_msgs::Image ROS中image传递的消息形式
-    try
-    {
-        boost::shared_ptr<void const> tracked_object;    //共享指针,原来初始化了：boost::shared_ptr<void const> tracked_object(&(msg->FaceImage))
-        cv::Mat faceMat = cv_bridge::toCvShare(msg->FaceImage, tracked_object,"bgr8")->image;
+// void imageCallback(const face_feature::FacePicMsg::ConstPtr& msg)
+// {
+//     //sensor_msgs::Image ROS中image传递的消息形式
+//     try
+//     {
+//         boost::shared_ptr<void const> tracked_object;    //共享指针,原来初始化了：boost::shared_ptr<void const> tracked_object(&(msg->FaceImage))
+//         cv::Mat faceMat = cv_bridge::toCvShare(msg->FaceImage, tracked_object,"bgr8")->image;
         
-        cv::imshow("view2", faceMat);    
-        cv::waitKey(3); 
+//         cv::imshow("view2", faceMat);    
+//         cv::waitKey(3); 
         
-        if(msg->id > 0){
-            ROS_INFO("hasFace");
-        }else{
-            ROS_INFO("no face");
-        }
+//         if(msg->id > 0){
+//             ROS_INFO("hasFace");
+//         }else{
+//             ROS_INFO("no face");
+//         }
 
-        //成功截取人脸
-        if(msg->id > 0 ){
-            //get tmp face feature
-            memset(tmpFaceFeature, 0, sizeof(tmpFaceFeature));
-            //printVector(tmpFaceFeature);
-            ArcFace::GetFaceFeature(faceMat, tmpFaceFeature);
-            // printVector(tmpFaceFeature);
-            cout << "id:    " << msg->id << endl;
+//         //成功截取人脸
+//         if(msg->id > 0 ){
+//             //get tmp face feature
+//             memset(tmpFaceFeature, 0, sizeof(tmpFaceFeature));
+//             //printVector(tmpFaceFeature);
+//             ArcFace::GetFaceFeature(faceMat, tmpFaceFeature);
+//             // printVector(tmpFaceFeature);
+//             cout << "id:    " << msg->id << endl;
             
-            // //do inference get face id
-            // ArcFace::DetectFaceID(faceMat, faceId, tmpFaceFeature);
-            // cout << "Face-----------------------------------------ID: " << faceId << endl << endl;
-            // matchMaker.addFaceId(faceId);
-            // // //得到人脸关键点
-            // // PFLD::AnalyzeOneFace(faceMat, prob);   // 正式使用时，改为faceMat//使用前要初始化引擎
-            // // driverResult.DealFaceResult(prob);
-            // // cout << "prob" << (*prob)<< endl;
-        }
-        else{
-            if(msg->id == -1)    //图片传输完毕，结束回调
-            {
-                return ;
-            }
-            else                            //截取的照片不可用
-            {
-                cout << "skip id: "<< msg->id << endl;
-            }
-            //没找到可识别的人脸目标，或者追踪失败
-            // DoFaceIDTimes = 0;
-            // faceId = 0;
-            // driverResult.ResetPointState();
-            // driver_msg.isDriver = false;
-            // driver_msg.driverID = faceId;
-            // matchMaker.addFaceId(0);
-        }
+//             // //do inference get face id
+//             // ArcFace::DetectFaceID(faceMat, faceId, tmpFaceFeature);
+//             // cout << "Face-----------------------------------------ID: " << faceId << endl << endl;
+//             // matchMaker.addFaceId(faceId);
+//             // // //得到人脸关键点
+//             // // PFLD::AnalyzeOneFace(faceMat, prob);   // 正式使用时，改为faceMat//使用前要初始化引擎
+//             // // driverResult.DealFaceResult(prob);
+//             // // cout << "prob" << (*prob)<< endl;
+//         }
+//         else{
+//             if(msg->id == -1)    //图片传输完毕，结束回调
+//             {
+//                 return ;
+//             }
+//             else                            //截取的照片不可用
+//             {
+//                 cout << "skip id: "<< msg->id << endl;
+//             }
+//             //没找到可识别的人脸目标，或者追踪失败
+//             // DoFaceIDTimes = 0;
+//             // faceId = 0;
+//             // driverResult.ResetPointState();
+//             // driver_msg.isDriver = false;
+//             // driver_msg.driverID = faceId;
+//             // matchMaker.addFaceId(0);
+//         }
 
-        // bool getSuccess = matchMaker.detectFaceId(faceId);
-        // if(getSuccess)
-        // {
-        //     driver_msg.isDriver = true;
-        //     if (faceId == 0)
-        //     {
-        //         driver_msg.isDriver = false;
-        //     }
-        //     driver_msg.driverID = faceId;
-        //     DriverInfoPub.publish(driver_msg);
-        // }
-    }
-    catch (cv_bridge::Exception& e)
-    {
-        ROS_ERROR("Could not convert from image to 'bgr8'.");
-    }
-}
+//         // bool getSuccess = matchMaker.detectFaceId(faceId);
+//         // if(getSuccess)
+//         // {
+//         //     driver_msg.isDriver = true;
+//         //     if (faceId == 0)
+//         //     {
+//         //         driver_msg.isDriver = false;
+//         //     }
+//         //     driver_msg.driverID = faceId;
+//         //     DriverInfoPub.publish(driver_msg);
+//         // }
+//     }
+//     catch (cv_bridge::Exception& e)
+//     {
+//         ROS_ERROR("Could not convert from image to 'bgr8'.");
+//     }
+// }
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "image_identify_node");
-    ros::NodeHandle node_generate;
+    // ros::init(argc, argv, "image_identify_node");
+    // ros::NodeHandle node_generate;
 
     //防止崩溃，所有模型引擎优先初始化
     cudaSetDevice(DEVICE);
@@ -284,9 +287,10 @@ int main(int argc, char **argv)
         std::cout << "Failed to open face data file." << std::endl;
     }
     else{
-        std::cout<< "Face data file opened successfully." << std::endl;
+        std::cout<< "Face data file  was opened successfully." << std::endl;
     }
     outFStream.write((char *) &gallaryData, sizeof(gallaryData));
+    std::cout<< "Face data file  was written successfully." << std::endl;
     outFStream.close();
 
     // std::vector<cv::String> picture_names;

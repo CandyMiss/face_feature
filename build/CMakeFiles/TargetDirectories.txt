@@ -1,0 +1,4 @@
+/home/nvidia/wdq/CMakeProject/face_feature/build/CMakeFiles/rebuild_cache.dir
+/home/nvidia/wdq/CMakeProject/face_feature/build/CMakeFiles/face_similarity.dir
+/home/nvidia/wdq/CMakeProject/face_feature/build/CMakeFiles/edit_cache.dir
+/home/nvidia/wdq/CMakeProject/face_feature/build/CMakeFiles/Generater.dir

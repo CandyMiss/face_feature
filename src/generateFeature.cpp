@@ -266,9 +266,9 @@ int main(int argc, char **argv)
                 memset(tmpFaceFeature, 0, sizeof(tmpFaceFeature));
                 //printVector(tmpFaceFeature);
                 ArcFace::GetFaceFeature(src, tmpFaceFeature);
-                memcpy((gallaryData+num*(ArcFace::FACE_FEATURE_DIMENSION)), tmpFaceFeature, (ArcFace::FACE_FEATURE_DIMENSION) * sizeof(float));
+                memcpy((gallaryData+id*(ArcFace::FACE_FEATURE_DIMENSION)), tmpFaceFeature, (ArcFace::FACE_FEATURE_DIMENSION) * sizeof(float));
                 // //test 
-                // printVector(gallaryData+num*(ArcFace::FACE_FEATURE_DIMENSION));
+                // printVector(gallaryData+id*(ArcFace::FACE_FEATURE_DIMENSION));
             }
         }
     }
